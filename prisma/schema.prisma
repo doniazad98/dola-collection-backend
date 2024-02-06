@@ -1,0 +1,90 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model UserEcom {
+  id         Int          @id @default(autoincrement())
+  name       String
+  phone      String
+  email      String       @unique
+  password   String
+  created_at DateTime     @default(now())
+  updated_at DateTime     @updatedAt
+  user_type  UserTypeEcom
+  cart_items CartItem[]
+  Cart       Cart?
+  Command    Command[]
+}
+
+model Product {
+  id         Int        @id @default(autoincrement())
+  name       String
+  category   Category
+  price      Float
+  colors     String[]
+  sizes      String[]
+  images     Image[]
+  cart_items CartItem[]
+}
+
+model Image {
+  id         Int      @id @default(autoincrement())
+  url        String
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+  product    Product  @relation(fields: [product_id], references: [id])
+  product_id Int
+}
+
+model CartItem {
+  id         Int      @id @default(autoincrement())
+  size       String
+  color      String
+  quantity   Int
+  product    Product  @relation(fields: [product_id], references: [id])
+  product_id Int
+  user       UserEcom @relation(fields: [user_id], references: [id])
+  user_id    Int
+  Cart       Cart     @relation(fields: [cart_id], references: [id])
+  cart_id    Int
+  Command    Command? @relation(fields: [command_id], references: [id])
+  command_id Int?
+}
+
+model Cart {
+  id         Int        @id @default(autoincrement())
+  coupoun    String
+  delivry    String
+  cart_items CartItem[]
+  user_id    Int        @unique
+  User       UserEcom   @relation(fields: [user_id], references: [id])
+}
+
+model Command {
+  id         Int        @id @default(autoincrement())
+  user       UserEcom   @relation(fields: [user_id], references: [id])
+  user_id    Int
+  coupoun    String
+  delivry    String
+  cart_items CartItem[]
+  price      Float
+}
+
+enum UserTypeEcom {
+  BUYER
+  ADMIN
+  MANAGER
+}
+
+enum Category {
+  ROBE
+  ENSEMBLE
+}
